@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, MapPin, Phone, Mail, Clock, Users, User, Search, X, Check, AlertCircle } from 'lucide-react';
 
 // API Configuration
-const API_URL = 'http://localhost:3000/api';
+const API_URL = 'https://appointment-system-backend-8ler.onrender.com/api';
 
 const AppointmentSystem = () => {
   const [step, setStep] = useState('initial'); // initial, verify, type, identifier, confirm-user, select-center, select-date, select-time, summary, complete
