@@ -1,4 +1,329 @@
 import React, { useState, useEffect } from 'react';
+import {
+  Calendar, MapPin, Phone, Clock, Users, User,
+  Search, X, AlertCircle
+} from 'lucide-react';
+
+/* =========================
+   CONFIG
+========================= */
+const API_URL = import.meta.env.VITE_API_URL; // definido en Vercel
+
+/* =========================
+   COMPONENT
+========================= */
+export default function AppointmentSystem() {
+  const [step, setStep] = useState('initial');
+  const [appointmentType, setAppointmentType] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [identifier, setIdentifier] = useState('');
+  const [centers, setCenters] = useState([]);
+  const [selectedCenter, setSelectedCenter] = useState(null);
+  const [availableDates, setAvailableDates] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [availableTimes, setAvailableTimes] = useState([]);
+  const [selectedTime, setSelectedTime] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [verifyQR, setVerifyQR] = useState('');
+
+  /* =========================
+     DEBUG
+  ========================= */
+  useEffect(() => {
+    console.log('STEP →', step);
+    console.log('API_URL →', API_URL);
+  }, [step]);
+
+  /* =========================
+     MOCK DATA
+  ========================= */
+  useEffect(() => {
+    setCenters([
+      {
+        id: '1',
+        nombre: 'Centro Santo Domingo',
+        direccion: 'Av. Winston Churchill, Santo Domingo, RD',
+        telefono: '+1 809 555 1234',
+        latitud: 18.4861,
+        longitud: -69.9312,
+        country_name: 'República Dominicana'
+      }
+    ]);
+  }, []);
+
+  /* =========================
+     HANDLERS
+  ========================= */
+  const resetFlow = () => {
+    setStep('initial');
+    setAppointmentType(null);
+    setCurrentUser(null);
+    setIdentifier('');
+    setSelectedCenter(null);
+    setSelectedDate(null);
+    setSelectedTime(null);
+    setError(null);
+  };
+
+  const handleIdentifierSubmit = () => {
+    if (!identifier.trim()) {
+      setError('Ingrese una identificación válida');
+      return;
+    }
+
+    setLoading(true);
+    setTimeout(() => {
+      setCurrentUser({
+        id: '1',
+        cedula: identifier,
+        nombre: 'Juan',
+        apellido: 'Pérez',
+        email: 'juan@email.com',
+        telefono: '8090000000'
+      });
+      setLoading(false);
+      setStep('confirm-user');
+    }, 800);
+  };
+
+  const handleSelectCenter = (center) => {
+    setSelectedCenter(center);
+    const dates = [];
+    const today = new Date();
+    for (let i = 1; i <= 7; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() + i);
+      dates.push(d.toISOString().split('T')[0]);
+    }
+    setAvailableDates(dates);
+    setStep('select-date');
+  };
+
+  const handleSelectDate = (date) => {
+    setSelectedDate(date);
+    setAvailableTimes(['09:00', '10:00', '11:00', '14:00', '15:00']);
+    setStep('select-time');
+  };
+
+  /* =========================
+     RENDERS POR PASO
+  ========================= */
+  const ScreenWrapper = ({ children }) => (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+      <div className="max-w-4xl mx-auto">{children}</div>
+    </div>
+  );
+
+  const renderInitial = () => (
+    <ScreenWrapper>
+      <div className="bg-white rounded-lg shadow-xl p-8 mt-10">
+        <h1 className="text-3xl font-bold text-center mb-8">
+          Sistema de Citas Online
+        </h1>
+        <div className="grid md:grid-cols-2 gap-6">
+          <button
+            onClick={() => setStep('verify')}
+            className="bg-green-500 text-white p-8 rounded-lg"
+          >
+            <Search size={40} />
+            Verificar Cita
+          </button>
+          <button
+            onClick={() => setStep('type')}
+            className="bg-indigo-600 text-white p-8 rounded-lg"
+          >
+            <Calendar size={40} />
+            Nueva Cita
+          </button>
+        </div>
+      </div>
+    </ScreenWrapper>
+  );
+
+  const renderType = () => (
+    <ScreenWrapper>
+      <button onClick={resetFlow} className="mb-4 flex gap-2">
+        <X /> Volver
+      </button>
+      <div className="bg-white p-8 rounded-lg shadow">
+        <div className="grid md:grid-cols-2 gap-6">
+          <button
+            onClick={() => {
+              setAppointmentType('individual');
+              setStep('identifier');
+            }}
+            className="bg-blue-500 text-white p-8 rounded-lg"
+          >
+            <User size={40} /> Individual
+          </button>
+          <button
+            onClick={() => {
+              setAppointmentType('group');
+              setStep('identifier');
+            }}
+            className="bg-purple-500 text-white p-8 rounded-lg"
+          >
+            <Users size={40} /> Grupal
+          </button>
+        </div>
+      </div>
+    </ScreenWrapper>
+  );
+
+  const renderIdentifier = () => (
+    <ScreenWrapper>
+      <button onClick={() => setStep('type')} className="mb-4 flex gap-2">
+        <X /> Volver
+      </button>
+      <div className="bg-white p-8 rounded-lg shadow">
+        <input
+          value={identifier}
+          onChange={(e) => setIdentifier(e.target.value)}
+          placeholder="Cédula o evento"
+          className="w-full border p-3 rounded"
+        />
+        {error && (
+          <div className="text-red-600 mt-2 flex gap-2">
+            <AlertCircle /> {error}
+          </div>
+        )}
+        <button
+          onClick={handleIdentifierSubmit}
+          className="mt-4 bg-indigo-600 text-white px-4 py-2 rounded"
+        >
+          {loading ? 'Buscando...' : 'Continuar'}
+        </button>
+      </div>
+    </ScreenWrapper>
+  );
+
+  const renderConfirmUser = () => (
+    <ScreenWrapper>
+      <button onClick={() => setStep('identifier')} className="mb-4 flex gap-2">
+        <X /> Volver
+      </button>
+      <div className="bg-white p-8 rounded-lg shadow">
+        <p><b>{currentUser.nombre} {currentUser.apellido}</b></p>
+        <p>{currentUser.cedula}</p>
+        <button
+          onClick={() => setStep('select-center')}
+          className="mt-4 bg-indigo-600 text-white px-4 py-2 rounded"
+        >
+          Confirmar
+        </button>
+      </div>
+    </ScreenWrapper>
+  );
+
+  const renderSelectCenter = () => (
+    <ScreenWrapper>
+      {centers.map(c => (
+        <div
+          key={c.id}
+          onClick={() => handleSelectCenter(c)}
+          className="bg-white p-6 rounded shadow mb-4 cursor-pointer"
+        >
+          <h3 className="font-bold">{c.nombre}</h3>
+          <p>{c.direccion}</p>
+          <p><Phone size={14} /> {c.telefono}</p>
+        </div>
+      ))}
+    </ScreenWrapper>
+  );
+
+  const renderSelectDate = () => (
+    <ScreenWrapper>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {availableDates.map(d => (
+          <button
+            key={d}
+            onClick={() => handleSelectDate(d)}
+            className="bg-white p-4 rounded shadow"
+          >
+            {d}
+          </button>
+        ))}
+      </div>
+    </ScreenWrapper>
+  );
+
+  const renderSelectTime = () => (
+    <ScreenWrapper>
+      <div className="grid grid-cols-3 gap-3">
+        {availableTimes.map(t => (
+          <button
+            key={t}
+            onClick={() => {
+              setSelectedTime(t);
+              setStep('summary');
+            }}
+            className="bg-white p-4 rounded shadow"
+          >
+            <Clock size={14} /> {t}
+          </button>
+        ))}
+      </div>
+    </ScreenWrapper>
+  );
+
+  const renderSummary = () => (
+    <ScreenWrapper>
+      <div className="bg-white p-8 rounded shadow">
+        <p><b>{currentUser.nombre}</b></p>
+        <p>{selectedDate} — {selectedTime}</p>
+        <button
+          onClick={() => setStep('complete')}
+          className="mt-4 bg-green-600 text-white px-4 py-2 rounded"
+        >
+          Confirmar Cita
+        </button>
+      </div>
+    </ScreenWrapper>
+  );
+
+  const renderComplete = () => (
+    <ScreenWrapper>
+      <div className="bg-white p-8 rounded shadow text-center">
+        <h2 className="text-2xl font-bold">¡Cita Confirmada!</h2>
+        <button
+          onClick={resetFlow}
+          className="mt-4 bg-indigo-600 text-white px-4 py-2 rounded"
+        >
+          Nueva Cita
+        </button>
+      </div>
+    </ScreenWrapper>
+  );
+
+  const renderInvalid = () => (
+    <div className="min-h-screen flex flex-col items-center justify-center text-red-600">
+      <h2>Estado inválido</h2>
+      <p>step = {String(step)}</p>
+      <button onClick={resetFlow} className="mt-4 underline">
+        Reiniciar
+      </button>
+    </div>
+  );
+
+  /* =========================
+     SWITCH CENTRAL
+  ========================= */
+  switch (step) {
+    case 'initial': return renderInitial();
+    case 'verify': return renderInitial(); // placeholder
+    case 'type': return renderType();
+    case 'identifier': return renderIdentifier();
+    case 'confirm-user': return currentUser ? renderConfirmUser() : renderInvalid();
+    case 'select-center': return renderSelectCenter();
+    case 'select-date': return renderSelectDate();
+    case 'select-time': return renderSelectTime();
+    case 'summary': return renderSummary();
+    case 'complete': return renderComplete();
+    default: return renderInvalid();
+  }
+}
+/*import React, { useState, useEffect } from 'react';
 import { Calendar, MapPin, Phone, Mail, Clock, Users, User, Search, X, Check, AlertCircle } from 'lucide-react';
 
 // API Configuration
@@ -654,5 +979,4 @@ const AppointmentSystem = () => {
 };
 
 
-export default AppointmentSystem;
-
+export default AppointmentSystem;*/
