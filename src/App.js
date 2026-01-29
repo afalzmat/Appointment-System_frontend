@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Calendar, MapPin, Phone, Clock, Users, User,
   Search, X, AlertCircle
-} from 'lucide-react';
+} from 'lucide-react'; 
 
 /* =========================
    CONFIG
@@ -980,3 +980,4 @@ const AppointmentSystem = () => {
 
 
 export default AppointmentSystem;*/
+
