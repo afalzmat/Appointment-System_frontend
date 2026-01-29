@@ -1,39 +1,43 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react'
 import {
-  Calendar, MapPin, Phone, Clock, Users, User,
-  Search, X, AlertCircle
-} from 'lucide-react'; 
+  Calendar,
+  Phone,
+  Clock,
+  Users,
+  User,
+  Search,
+  X,
+  AlertCircle
+} from 'lucide-react'
 
 /* =========================
    CONFIG
 ========================= */
-const API_URL = import.meta.env.VITE_API_URL; // definido en Vercel
+const API_URL = import.meta.env.VITE_API_URL
 
 /* =========================
    COMPONENT
 ========================= */
-export default function AppointmentSystem() {
-  const [step, setStep] = useState('initial');
-  const [appointmentType, setAppointmentType] = useState(null);
-  const [currentUser, setCurrentUser] = useState(null);
-  const [identifier, setIdentifier] = useState('');
-  const [centers, setCenters] = useState([]);
-  const [selectedCenter, setSelectedCenter] = useState(null);
-  const [availableDates, setAvailableDates] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [availableTimes, setAvailableTimes] = useState([]);
-  const [selectedTime, setSelectedTime] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [verifyQR, setVerifyQR] = useState('');
+export default function App() {
+  const [step, setStep] = useState('initial')
+  const [appointmentType, setAppointmentType] = useState(null)
+  const [currentUser, setCurrentUser] = useState(null)
+  const [identifier, setIdentifier] = useState('')
+  const [centers, setCenters] = useState([])
+  const [availableDates, setAvailableDates] = useState([])
+  const [availableTimes, setAvailableTimes] = useState([])
+  const [selectedDate, setSelectedDate] = useState(null)
+  const [selectedTime, setSelectedTime] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
 
   /* =========================
      DEBUG
   ========================= */
   useEffect(() => {
-    console.log('STEP →', step);
-    console.log('API_URL →', API_URL);
-  }, [step]);
+    console.log('STEP →', step)
+    console.log('API_URL →', API_URL)
+  }, [step])
 
   /* =========================
      MOCK DATA
@@ -43,168 +47,156 @@ export default function AppointmentSystem() {
       {
         id: '1',
         nombre: 'Centro Santo Domingo',
-        direccion: 'Av. Winston Churchill, Santo Domingo, RD',
-        telefono: '+1 809 555 1234',
-        latitud: 18.4861,
-        longitud: -69.9312,
-        country_name: 'República Dominicana'
+        direccion: 'Av. Winston Churchill, Santo Domingo',
+        telefono: '+1 809 555 1234'
       }
-    ]);
-  }, []);
+    ])
+  }, [])
+
+  /* =========================
+     HELPERS
+  ========================= */
+  const resetFlow = () => {
+    setStep('initial')
+    setAppointmentType(null)
+    setCurrentUser(null)
+    setIdentifier('')
+    setSelectedDate(null)
+    setSelectedTime(null)
+    setError(null)
+  }
+
+  const Screen = ({ children }) => (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+      <div className="max-w-3xl mx-auto">{children}</div>
+    </div>
+  )
 
   /* =========================
      HANDLERS
   ========================= */
-  const resetFlow = () => {
-    setStep('initial');
-    setAppointmentType(null);
-    setCurrentUser(null);
-    setIdentifier('');
-    setSelectedCenter(null);
-    setSelectedDate(null);
-    setSelectedTime(null);
-    setError(null);
-  };
-
   const handleIdentifierSubmit = () => {
     if (!identifier.trim()) {
-      setError('Ingrese una identificación válida');
-      return;
+      setError('Ingrese una identificación válida')
+      return
     }
 
-    setLoading(true);
+    setLoading(true)
     setTimeout(() => {
       setCurrentUser({
         id: '1',
-        cedula: identifier,
         nombre: 'Juan',
         apellido: 'Pérez',
-        email: 'juan@email.com',
-        telefono: '8090000000'
-      });
-      setLoading(false);
-      setStep('confirm-user');
-    }, 800);
-  };
+        cedula: identifier
+      })
+      setLoading(false)
+      setStep('confirm-user')
+    }, 700)
+  }
 
-  const handleSelectCenter = (center) => {
-    setSelectedCenter(center);
-    const dates = [];
-    const today = new Date();
-    for (let i = 1; i <= 7; i++) {
-      const d = new Date(today);
-      d.setDate(today.getDate() + i);
-      dates.push(d.toISOString().split('T')[0]);
-    }
-    setAvailableDates(dates);
-    setStep('select-date');
-  };
+  const handleSelectCenter = () => {
+    const today = new Date()
+    const dates = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(today)
+      d.setDate(today.getDate() + i + 1)
+      return d.toISOString().split('T')[0]
+    })
+    setAvailableDates(dates)
+    setStep('select-date')
+  }
 
   const handleSelectDate = (date) => {
-    setSelectedDate(date);
-    setAvailableTimes(['09:00', '10:00', '11:00', '14:00', '15:00']);
-    setStep('select-time');
-  };
+    setSelectedDate(date)
+    setAvailableTimes(['09:00', '10:00', '11:00', '14:00', '15:00'])
+    setStep('select-time')
+  }
 
   /* =========================
-     RENDERS POR PASO
+     SCREENS
   ========================= */
-  const ScreenWrapper = ({ children }) => (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <div className="max-w-4xl mx-auto">{children}</div>
-    </div>
-  );
-
-  const renderInitial = () => (
-    <ScreenWrapper>
-      <div className="bg-white rounded-lg shadow-xl p-8 mt-10">
-        <h1 className="text-3xl font-bold text-center mb-8">
-          Sistema de Citas Online
-        </h1>
-        <div className="grid md:grid-cols-2 gap-6">
+  const Initial = () => (
+    <Screen>
+      <div className="bg-white p-8 rounded shadow text-center mt-10">
+        <h1 className="text-3xl font-bold mb-6">Sistema de Citas</h1>
+        <div className="grid md:grid-cols-2 gap-4">
           <button
             onClick={() => setStep('verify')}
-            className="bg-green-500 text-white p-8 rounded-lg"
+            className="bg-green-500 text-white p-6 rounded"
           >
-            <Search size={40} />
-            Verificar Cita
+            <Search size={32} /> Verificar
           </button>
           <button
             onClick={() => setStep('type')}
-            className="bg-indigo-600 text-white p-8 rounded-lg"
+            className="bg-indigo-600 text-white p-6 rounded"
           >
-            <Calendar size={40} />
-            Nueva Cita
+            <Calendar size={32} /> Nueva Cita
           </button>
         </div>
       </div>
-    </ScreenWrapper>
-  );
+    </Screen>
+  )
 
-  const renderType = () => (
-    <ScreenWrapper>
+  const Type = () => (
+    <Screen>
       <button onClick={resetFlow} className="mb-4 flex gap-2">
         <X /> Volver
       </button>
-      <div className="bg-white p-8 rounded-lg shadow">
-        <div className="grid md:grid-cols-2 gap-6">
-          <button
-            onClick={() => {
-              setAppointmentType('individual');
-              setStep('identifier');
-            }}
-            className="bg-blue-500 text-white p-8 rounded-lg"
-          >
-            <User size={40} /> Individual
-          </button>
-          <button
-            onClick={() => {
-              setAppointmentType('group');
-              setStep('identifier');
-            }}
-            className="bg-purple-500 text-white p-8 rounded-lg"
-          >
-            <Users size={40} /> Grupal
-          </button>
-        </div>
+      <div className="bg-white p-6 rounded shadow grid grid-cols-2 gap-4">
+        <button
+          onClick={() => {
+            setAppointmentType('individual')
+            setStep('identifier')
+          }}
+          className="bg-blue-500 text-white p-6 rounded"
+        >
+          <User size={32} /> Individual
+        </button>
+        <button
+          onClick={() => {
+            setAppointmentType('group')
+            setStep('identifier')
+          }}
+          className="bg-purple-500 text-white p-6 rounded"
+        >
+          <Users size={32} /> Grupal
+        </button>
       </div>
-    </ScreenWrapper>
-  );
+    </Screen>
+  )
 
-  const renderIdentifier = () => (
-    <ScreenWrapper>
+  const Identifier = () => (
+    <Screen>
       <button onClick={() => setStep('type')} className="mb-4 flex gap-2">
         <X /> Volver
       </button>
-      <div className="bg-white p-8 rounded-lg shadow">
+      <div className="bg-white p-6 rounded shadow">
         <input
           value={identifier}
           onChange={(e) => setIdentifier(e.target.value)}
-          placeholder="Cédula o evento"
           className="w-full border p-3 rounded"
+          placeholder="Cédula o evento"
         />
         {error && (
-          <div className="text-red-600 mt-2 flex gap-2">
+          <p className="text-red-600 flex gap-2 mt-2">
             <AlertCircle /> {error}
-          </div>
+          </p>
         )}
         <button
           onClick={handleIdentifierSubmit}
           className="mt-4 bg-indigo-600 text-white px-4 py-2 rounded"
         >
-          {loading ? 'Buscando...' : 'Continuar'}
+          {loading ? 'Buscando…' : 'Continuar'}
         </button>
       </div>
-    </ScreenWrapper>
-  );
+    </Screen>
+  )
 
-  const renderConfirmUser = () => (
-    <ScreenWrapper>
-      <button onClick={() => setStep('identifier')} className="mb-4 flex gap-2">
-        <X /> Volver
-      </button>
-      <div className="bg-white p-8 rounded-lg shadow">
-        <p><b>{currentUser.nombre} {currentUser.apellido}</b></p>
+  const ConfirmUser = () => (
+    <Screen>
+      <div className="bg-white p-6 rounded shadow">
+        <p className="font-bold">
+          {currentUser.nombre} {currentUser.apellido}
+        </p>
         <p>{currentUser.cedula}</p>
         <button
           onClick={() => setStep('select-center')}
@@ -213,29 +205,31 @@ export default function AppointmentSystem() {
           Confirmar
         </button>
       </div>
-    </ScreenWrapper>
-  );
+    </Screen>
+  )
 
-  const renderSelectCenter = () => (
-    <ScreenWrapper>
-      {centers.map(c => (
+  const SelectCenter = () => (
+    <Screen>
+      {centers.map((c) => (
         <div
           key={c.id}
-          onClick={() => handleSelectCenter(c)}
+          onClick={handleSelectCenter}
           className="bg-white p-6 rounded shadow mb-4 cursor-pointer"
         >
           <h3 className="font-bold">{c.nombre}</h3>
           <p>{c.direccion}</p>
-          <p><Phone size={14} /> {c.telefono}</p>
+          <p className="flex gap-2">
+            <Phone size={14} /> {c.telefono}
+          </p>
         </div>
       ))}
-    </ScreenWrapper>
-  );
+    </Screen>
+  )
 
-  const renderSelectDate = () => (
-    <ScreenWrapper>
+  const SelectDate = () => (
+    <Screen>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {availableDates.map(d => (
+        {availableDates.map((d) => (
           <button
             key={d}
             onClick={() => handleSelectDate(d)}
@@ -245,18 +239,18 @@ export default function AppointmentSystem() {
           </button>
         ))}
       </div>
-    </ScreenWrapper>
-  );
+    </Screen>
+  )
 
-  const renderSelectTime = () => (
-    <ScreenWrapper>
+  const SelectTime = () => (
+    <Screen>
       <div className="grid grid-cols-3 gap-3">
-        {availableTimes.map(t => (
+        {availableTimes.map((t) => (
           <button
             key={t}
             onClick={() => {
-              setSelectedTime(t);
-              setStep('summary');
+              setSelectedTime(t)
+              setStep('summary')
             }}
             className="bg-white p-4 rounded shadow"
           >
@@ -264,14 +258,16 @@ export default function AppointmentSystem() {
           </button>
         ))}
       </div>
-    </ScreenWrapper>
-  );
+    </Screen>
+  )
 
-  const renderSummary = () => (
-    <ScreenWrapper>
-      <div className="bg-white p-8 rounded shadow">
-        <p><b>{currentUser.nombre}</b></p>
-        <p>{selectedDate} — {selectedTime}</p>
+  const Summary = () => (
+    <Screen>
+      <div className="bg-white p-6 rounded shadow">
+        <p>{currentUser.nombre}</p>
+        <p>
+          {selectedDate} — {selectedTime}
+        </p>
         <button
           onClick={() => setStep('complete')}
           className="mt-4 bg-green-600 text-white px-4 py-2 rounded"
@@ -279,12 +275,12 @@ export default function AppointmentSystem() {
           Confirmar Cita
         </button>
       </div>
-    </ScreenWrapper>
-  );
+    </Screen>
+  )
 
-  const renderComplete = () => (
-    <ScreenWrapper>
-      <div className="bg-white p-8 rounded shadow text-center">
+  const Complete = () => (
+    <Screen>
+      <div className="bg-white p-6 rounded shadow text-center">
         <h2 className="text-2xl font-bold">¡Cita Confirmada!</h2>
         <button
           onClick={resetFlow}
@@ -293,46 +289,37 @@ export default function AppointmentSystem() {
           Nueva Cita
         </button>
       </div>
-    </ScreenWrapper>
-  );
+    </Screen>
+  )
 
-  const renderInvalid = () => (
+  const Invalid = () => (
     <div className="min-h-screen flex flex-col items-center justify-center text-red-600">
       <h2>Estado inválido</h2>
       <p>step = {String(step)}</p>
-      <button onClick={resetFlow} className="mt-4 underline">
+      <button onClick={resetFlow} className="underline mt-4">
         Reiniciar
       </button>
     </div>
-  );
+  )
 
   /* =========================
-     SWITCH CENTRAL
+     ROUTER
   ========================= */
-
-//added
-return (
-  <div style={{ padding: 40, fontSize: 20 }}>
-    <h1>APP CARGÓ</h1>
-    <p>STEP: {String(step)}</p>
-    <p>API_URL: {String(import.meta.env.VITE_API_URL)}</p>
-  </div>
-);
-//end added
   switch (step) {
-    case 'initial': return renderInitial();
-    case 'verify': return renderInitial(); // placeholder
-    case 'type': return renderType();
-    case 'identifier': return renderIdentifier();
-    case 'confirm-user': return currentUser ? renderConfirmUser() : renderInvalid();
-    case 'select-center': return renderSelectCenter();
-    case 'select-date': return renderSelectDate();
-    case 'select-time': return renderSelectTime();
-    case 'summary': return renderSummary();
-    case 'complete': return renderComplete();
-    default: return renderInvalid();
+    case 'initial': return <Initial />
+    case 'verify': return <Initial />
+    case 'type': return <Type />
+    case 'identifier': return <Identifier />
+    case 'confirm-user': return currentUser ? <ConfirmUser /> : <Invalid />
+    case 'select-center': return <SelectCenter />
+    case 'select-date': return <SelectDate />
+    case 'select-time': return <SelectTime />
+    case 'summary': return <Summary />
+    case 'complete': return <Complete />
+    default: return <Invalid />
   }
 }
+
 /*import React, { useState, useEffect } from 'react';
 import { Calendar, MapPin, Phone, Mail, Clock, Users, User, Search, X, Check, AlertCircle } from 'lucide-react';
 
@@ -990,5 +977,6 @@ const AppointmentSystem = () => {
 
 
 export default AppointmentSystem;*/
+
 
 
