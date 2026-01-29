@@ -309,6 +309,16 @@ export default function AppointmentSystem() {
   /* =========================
      SWITCH CENTRAL
   ========================= */
+
+//added
+return (
+  <div style={{ padding: 40, fontSize: 20 }}>
+    <h1>APP CARGÓ</h1>
+    <p>STEP: {String(step)}</p>
+    <p>API_URL: {String(import.meta.env.VITE_API_URL)}</p>
+  </div>
+);
+//end added
   switch (step) {
     case 'initial': return renderInitial();
     case 'verify': return renderInitial(); // placeholder
@@ -980,4 +990,5 @@ const AppointmentSystem = () => {
 
 
 export default AppointmentSystem;*/
+
 
